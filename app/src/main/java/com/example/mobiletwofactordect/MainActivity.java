@@ -1,53 +1,56 @@
 package com.example.mobiletwofactordect;
 
-import static android.content.ContentValues.TAG;
-
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.widget.TextView;
 
-import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import android.util.Log;
-import android.widget.Toast;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.messaging.FirebaseMessaging;
+import com.example.mobiletwofactordect.R;
 
 public class MainActivity extends AppCompatActivity {
+
+    private TextView titleTextView;
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String title = intent.getStringExtra("title");
+            String body = intent.getStringExtra("body");
+            updateTextView(title, body);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        FirebaseMessaging.getInstance().getToken()
-                .addOnCompleteListener(new OnCompleteListener<String>() {
-                    @Override
-                    public void onComplete(@NonNull Task<String> task) {
-                        if (!task.isSuccessful()) {
-                            Log.w(TAG, "Fetching FCM registration token failed", task.getException());
-                            return;
-                        }
-
-                        // Získejte nový FCM registrační token
-                        String token = task.getResult();
-
-                        // Zalogujte a zobrazte toast s tokenem
-                        String msg = getString(R.string.msg_token_fmt, token);
-                        Log.d(TAG, msg);
-                        Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+
+        // Přiřazení odkazu na TextView
+        titleTextView = findViewById(R.id.titleTextView);
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Registrace BroadcastReceiveru pro příjem notifikace
+        IntentFilter filter = new IntentFilter("com.example.NOTIFICATION_DATA");
+        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, filter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Odhlášení BroadcastReceiveru
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
+    }
+
+    public void updateTextView(String title, String body) {
+        // Nastavení dat do TextView
+        titleTextView.setText("Title: " + title + "\nBody: " + body);
     }
 }
