@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
         loginButton = findViewById(R.id.loginButton);
         Button registerButton = findViewById(R.id.registerButton);
 
+        GetTokenForApp.setupFCMTokenListener(this);
 
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -76,9 +77,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // Volání metody pro odeslání POST požadavku
-                    makePost();
+                makePost();
             }
         });
+
 
     }
 

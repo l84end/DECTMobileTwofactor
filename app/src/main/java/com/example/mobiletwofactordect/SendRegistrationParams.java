@@ -6,8 +6,11 @@ import org.json.JSONObject;
 public class SendRegistrationParams {
 
     public static JSONObject getInfoToSend(String user, String secretCode) {
-        String firebaseId = GetTokenForApp.getFirebaseId(); // Získání Firebase ID pomocí třídy GetTokenForApp
         JSONObject jsonObject = new JSONObject();
+        String firebaseId = GetTokenForApp.getToken();
+        System.out.println("Secret Code: " + secretCode);
+        System.out.println("User: " + user);
+        System.out.println("FirebaseToken: " + firebaseId);
 
         try {
             jsonObject.put("user", user);

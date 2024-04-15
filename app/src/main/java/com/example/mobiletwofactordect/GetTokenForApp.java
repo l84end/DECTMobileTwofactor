@@ -13,6 +13,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 public class GetTokenForApp {
 
     private static final String TAG = "GetTokenForApp";
+    private static String currentToken = null; // Přidáno pro ukládání aktuálního tokenu
 
     public static void setupFCMTokenListener(Activity activity) {
         FirebaseMessaging.getInstance().getToken()
@@ -26,6 +27,7 @@ public class GetTokenForApp {
 
                         // Získejte nový FCM registrační token
                         String token = task.getResult();
+                        currentToken = token; // Uložení tokenu pro pozdější načtení
 
                         // Zalogujte a zobrazte toast s tokenem
                         String msg = activity.getString(R.string.msg_token_fmt, token);
@@ -35,4 +37,9 @@ public class GetTokenForApp {
                 });
     }
 
+    // Metoda pro načtení uloženého tokenu
+    public static String getToken() {
+        return currentToken;
+    }
 }
+
