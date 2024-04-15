@@ -60,6 +60,16 @@ public class MainActivity extends AppCompatActivity {
         titleTextView = findViewById(R.id.titleTextView);
         requestInfoTextView = findViewById(R.id.bodyTextView);
         loginButton = findViewById(R.id.loginButton);
+        Button registerButton = findViewById(R.id.registerButton);
+
+
+        registerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, RegisterPhone.class);
+                startActivity(intent);
+            }
+        });
 
         // Nastavení posluchače událostí pro tlačítko loginButton
         loginButton.setOnClickListener(new View.OnClickListener() {
@@ -132,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
                             .build();
 
                     Request request = new Request.Builder()
-                            .url("https://192.168.1.38:8443/index.php/apps/twofactormobile/api/1.0/foo")
+                            .url("https://192.168.1.239:8443/index.php/apps/twofactormobile/api/1.0/foo")
                             .post(requestBody)
                             .build();
 
