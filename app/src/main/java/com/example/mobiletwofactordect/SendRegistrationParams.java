@@ -7,11 +7,9 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
-import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.UnrecoverableKeyException;
@@ -39,22 +37,16 @@ public class SendRegistrationParams {
 
         KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
         keyStore.load(null);
-        PublicKey publicKey = keyStore.getCertificate("vysetrovatel").getPublicKey();
-
+        PublicKey publicKey = keyStore.getCertificate(user).getPublicKey();
         byte[] publicKeyBytes = publicKey.getEncoded();
-
         String publicKeyBase64 = Base64.getEncoder().encodeToString(publicKeyBytes);
 
 
         try {
             ECDSAKeyManager keyManager = new ECDSAKeyManager();
+            keyManager.getAliases();
 
-            System.out.println("user: " + user);
-            System.out.println("matchingKey: " + matchingKey);
-            System.out.println("firebaseId: " + firebaseId);
-            System.out.println("pubKey: " + publicKeyBase64);
-
-            // Vytvoření JSON objektu s potřebnými informacemi
+            // Vytvoření JSON objektu
             jsonObject.put("user", user);
             jsonObject.put("matchingKey", matchingKey);
             jsonObject.put("firebaseId", firebaseId);

@@ -121,12 +121,12 @@ public class RegisterPhone extends AppCompatActivity {
             String secretCode = jsonObject.getString("secretCode");
             String user = jsonObject.getString("user");
 
+            ECDSAKeyManager keyManager = new ECDSAKeyManager();
+            keyManager.generateKeyPair(user);
             JSONObject dataToSend = SendRegistrationParams.getInfoToSend(user, secretCode);
 
-            // Zde můžete provést další operace s daty, například odeslat je na server
         } catch (JSONException e) {
             e.printStackTrace();
-            // Chyba při analýze JSON, zobrazíme chybovou zprávu v konzoli
             System.out.println("Error parsing QR parameters: " + e.getMessage());
         } catch (UnrecoverableKeyException e) {
             throw new RuntimeException(e);

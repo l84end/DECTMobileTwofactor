@@ -4,10 +4,8 @@ package com.example.mobiletwofactordect;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
@@ -17,10 +15,6 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
-import java.security.SignatureException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
-import java.security.spec.InvalidKeySpecException;
 import android.util.Base64;
 import java.util.Enumeration;
 
@@ -49,38 +43,15 @@ public class ECDSAKeyManager {
         }
     }
 
-    /*
-    * V případě odtranění záznamu je možné pár klíču odstranit za pomocí této funkce. Parametr je uživatelské jméno.
-     */
-    public void deleteEntry(String alias) {
-        try {
-            KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
-            ks.load(null);
-            ks.deleteEntry(alias);
-
-            System.out.println("Záznam s aliasem '" + alias + "' byl úspěšně odstraněn.");
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     /*
      * Výpis aliasů pro které existují klíče.
      */
     public void getAliases() {
         try {
-            // Získání instance KeyStore
             KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
-
-            // Načtení KeyStore
             ks.load(null);
-
-            // Získání seznamu aliasů
             Enumeration<String> aliases = ks.aliases();
-
-            // Výpis aliasů
             System.out.println("Seznam aliasů v úložišti klíčů:");
             while (aliases.hasMoreElements()) {
                 String alias = aliases.nextElement();
@@ -88,13 +59,14 @@ public class ECDSAKeyManager {
             }
         } catch (KeyStoreException e) {
             e.printStackTrace();
-            // Řešení výjimky KeyStoreException
         } catch (Exception e) {
             e.printStackTrace();
-            // Řešení ostatních výjimek
         }
     }
 
+    /*
+     * Funkce pro podpis zpráv privátním klíčem
+     */
     public String signMessage(String dataString, String alias) {
         try {
             KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
@@ -117,7 +89,27 @@ public class ECDSAKeyManager {
             return null;
         }
     }
-/*
+
+    /*
+     * V případě odtranění záznamu je možné pár klíču odstranit za pomocí této funkce. Parametr je uživatelské jméno.
+     */
+    public void deleteEntry(String alias) {
+        try {
+            KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
+            ks.load(null);
+            ks.deleteEntry(alias);
+
+            System.out.println("Záznam s aliasem '" + alias + "' byl úspěšně odstraněn.");
+        } catch (KeyStoreException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*
+     * Přes tuhle třídu lze zobrazit certifikát pro zvoleného uživatele.
+     */
     public String getPublicKeyPEM(String user) throws Exception {
         KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
         keyStore.load(null);
@@ -133,65 +125,6 @@ public class ECDSAKeyManager {
     }
 
 
-    public static void podpis() throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, KeyStoreException, CertificateException, IOException, UnrecoverableKeyException {
-        // Vytvoření řetězce, který chceme podepsat
-        String data = "Hello, world!";
 
-        // Získání instance KeyStore
-        KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
-        keyStore.load(null);
-
-        // Získání soukromého klíče podle aliasu
-        PrivateKey privateKey = (PrivateKey) keyStore.getKey("vysetrovatel", null);
-
-        // Podepsání zprávy
-        byte[] signature = sign(data, privateKey);
-        System.out.println("Podpis: " + bytesToHex(signature));
-
-        // Ověření podpisu
-        PublicKey publicKey = keyStore.getCertificate("vysetrovatel").getPublicKey();
-        boolean isValid = verify(data, signature, publicKey);
-        System.out.println("Tyvole tahle kokotina me stve: " + publicKey);
-        System.out.println("Podpis je platný: " + isValid);
-    }
-
-    // Metoda pro podpis zprávy
-    public static byte[] sign(String data, PrivateKey privateKey) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        Signature ecdsaSignature = Signature.getInstance("SHA256withECDSA");
-        ecdsaSignature.initSign(privateKey);
-        ecdsaSignature.update(data.getBytes());
-        return ecdsaSignature.sign();
-    }
-
-    // Metoda pro ověření podpisu
-    public static boolean verify(String data, byte[] signature, PublicKey publicKey) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        Signature ecdsaSignature = Signature.getInstance("SHA256withECDSA");
-        ecdsaSignature.initVerify(publicKey);
-        ecdsaSignature.update(data.getBytes());
-        return ecdsaSignature.verify(signature);
-    }
-
-    // Pomocná metoda pro převod bytů na hexadecimální řetězec
-    private static String bytesToHex(byte[] bytes) {
-        StringBuilder hexString = new StringBuilder();
-        for (byte b : bytes) {
-            String hex = Integer.toHexString(0xff & b);
-            if (hex.length() == 1) {
-                hexString.append('0');
-            }
-            hexString.append(hex);
-        }
-        return hexString.toString();
-    }
-
-    public static void main(String[] args) {
-        try {
-            podpis();
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException |
-                 SignatureException | KeyStoreException | CertificateException | IOException |
-                 UnrecoverableKeyException e) {
-            e.printStackTrace();
-        }
-    }*/
 
 }
