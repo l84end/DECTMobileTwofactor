@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import java.io.Console;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -31,6 +32,9 @@ public class MainActivity extends AppCompatActivity {
     private TextView titleTextView;
     private TextView requestInfoTextView; // TextView pro zobrazení informací o požadavku
     private TextView responseTextView; // TextView pro zobrazení odpovědi serveru
+
+    private String dataToSend = "123123123";
+    private String dataToSend2;
 
     private String uid;
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
@@ -70,13 +74,18 @@ public class MainActivity extends AppCompatActivity {
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Volání metody pro odeslání POST požadavku
-                makePost();
+                ECDSAKeyManager signMessage = new ECDSAKeyManager();
+                dataToSend2 = signMessage.signMessage(dataToSend, uid);
+                System.out.println("Podpis 123123 je: " + dataToSend2);
+
+                makePost(dataToSend2);
             }
         });
 
 
     }
+
+
 
     @Override
     protected void onResume() {
@@ -99,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void makePost() {
+    private void makePost(String dataToSend) {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -134,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
                     RequestBody requestBody = new MultipartBody.Builder()
                             .setType(MultipartBody.FORM)
                             .addFormDataPart("uid", uid)
-                            .addFormDataPart("key", "123123123")
+                            .addFormDataPart("key", dataToSend)
                             .build();
 
                     Request request = new Request.Builder()

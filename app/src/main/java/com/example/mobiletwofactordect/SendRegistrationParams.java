@@ -1,14 +1,20 @@
 package com.example.mobiletwofactordect;
 
+import java.util.Base64;
 import android.widget.TextView;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
@@ -26,29 +32,44 @@ public class SendRegistrationParams {
 
     private TextView showQRInfo;
 
-    public static JSONObject getInfoToSend(String user, String matchingKey) {
+
+    public static JSONObject getInfoToSend(String user, String matchingKey) throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException, UnrecoverableKeyException {
         JSONObject jsonObject = new JSONObject();
         String firebaseId = GetTokenForApp.getToken();
-        String pubKey = "this is my private key2";
 
-        System.out.println("user: " + user);
-        System.out.println("matchingKey: " + matchingKey);
-        System.out.println("firebaseId: " + firebaseId);
-        System.out.println("pubKey: " + pubKey);
+        KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
+        keyStore.load(null);
+        PublicKey publicKey = keyStore.getCertificate("vysetrovatel").getPublicKey();
+
+        byte[] publicKeyBytes = publicKey.getEncoded();
+
+        String publicKeyBase64 = Base64.getEncoder().encodeToString(publicKeyBytes);
+
+
         try {
+            ECDSAKeyManager keyManager = new ECDSAKeyManager();
+
+            System.out.println("user: " + user);
+            System.out.println("matchingKey: " + matchingKey);
+            System.out.println("firebaseId: " + firebaseId);
+            System.out.println("pubKey: " + publicKeyBase64);
+
+            // Vytvoření JSON objektu s potřebnými informacemi
             jsonObject.put("user", user);
             jsonObject.put("matchingKey", matchingKey);
             jsonObject.put("firebaseId", firebaseId);
-            jsonObject.put("pubKey", pubKey);
-            sendRegistration(matchingKey, pubKey, firebaseId, user);
+            jsonObject.put("pubKey", publicKeyBase64);
 
-        } catch (JSONException e) {
+            // Odeslání registrace s klíči
+            sendRegistration(matchingKey, publicKeyBase64, firebaseId, user);
+        } catch (Exception e) {
             e.printStackTrace();
             jsonObject = new JSONObject();
         }
 
         return jsonObject;
     }
+
 
 
     private static void sendRegistration(String matchingKey, String publicKey, String firebaseId, String login) {

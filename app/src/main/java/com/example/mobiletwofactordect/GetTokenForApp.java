@@ -32,7 +32,7 @@ public class GetTokenForApp {
                         // Zalogujte a zobrazte toast s tokenem
                         String msg = activity.getString(R.string.msg_token_fmt, token);
                         Log.d(TAG, msg);
-                        Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show();
                     }
                 });
     }
