@@ -1,21 +1,46 @@
 package com.example.mobiletwofactordect;
 
+import android.widget.TextView;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 public class SendRegistrationParams {
 
-    public static JSONObject getInfoToSend(String user, String secretCode) {
+    private TextView showQRInfo;
+
+    public static JSONObject getInfoToSend(String user, String matchingKey) {
         JSONObject jsonObject = new JSONObject();
         String firebaseId = GetTokenForApp.getToken();
-        System.out.println("Secret Code: " + secretCode);
-        System.out.println("User: " + user);
-        System.out.println("FirebaseToken: " + firebaseId);
+        String pubKey = "this is my private key2";
 
+        System.out.println("user: " + user);
+        System.out.println("matchingKey: " + matchingKey);
+        System.out.println("firebaseId: " + firebaseId);
+        System.out.println("pubKey: " + pubKey);
         try {
             jsonObject.put("user", user);
-            jsonObject.put("secretCode", secretCode);
+            jsonObject.put("matchingKey", matchingKey);
             jsonObject.put("firebaseId", firebaseId);
+            jsonObject.put("pubKey", pubKey);
+            sendRegistration(matchingKey, pubKey, firebaseId, user);
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -26,21 +51,63 @@ public class SendRegistrationParams {
     }
 
 
-    private void sendRegistration(String matchingKey, String publicKey, String firebaseId, String login) {
-        // Vytvoření instance třídy JSONObject pro uložení dat
-        JSONObject requestData = new JSONObject();
-        try {
-            // Přidání parametrů do objektu JSON
-            requestData.put("matchingKey", matchingKey);
-            requestData.put("publicKey", publicKey);
-            requestData.put("firebaseId", firebaseId);
-            requestData.put("login", login);
+    private static void sendRegistration(String matchingKey, String publicKey, String firebaseId, String login) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    // Ignorování ověření certifikátu
+                    TrustManager[] trustAllCertificates = new TrustManager[]{
+                            new X509TrustManager() {
+                                @Override
+                                public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+                                }
 
-            // Zde můžete provést odeslání dat na server, například pomocí knihovny Retrofit nebo Volley
-            // Po odeslání dat můžete zpracovat odpověď serveru
-        } catch (JSONException e) {
-            e.printStackTrace();
-            // Chyba při vytváření objektu JSON, můžete zde přidat kód pro zpracování chyby
-        }
+                                @Override
+                                public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+                                }
+
+                                @Override
+                                public X509Certificate[] getAcceptedIssuers() {
+                                    return new X509Certificate[]{};
+                                }
+                            }
+                    };
+
+                    SSLContext sslContext = SSLContext.getInstance("TLS");
+                    sslContext.init(null, trustAllCertificates, new SecureRandom());
+
+                    OkHttpClient client = new OkHttpClient.Builder()
+                            .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) trustAllCertificates[0])
+                            .hostnameVerifier((hostname, session) -> true)
+                            .build();
+
+                    // Vytvoření a provedení požadavku
+                    RequestBody requestBody = new MultipartBody.Builder()
+                            .setType(MultipartBody.FORM)
+                            .addFormDataPart("matchingKey", matchingKey)
+                            .addFormDataPart("publicKey", publicKey)
+                            .addFormDataPart("firebaseId", firebaseId)
+                            .addFormDataPart("login", login)
+                            .build();
+
+                    Request request = new Request.Builder()
+                            .url("https://192.168.1.239:8443/index.php/apps/twofactormobile/api/1.0/set-device")
+                            .post(requestBody)
+                            .build();
+
+                    Response response = client.newCall(request).execute();
+                    final String result = response.body().string();
+
+                } catch (NoSuchAlgorithmException e) {
+                    throw new RuntimeException(e);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } catch (KeyManagementException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }).start();
     }
+
 }
