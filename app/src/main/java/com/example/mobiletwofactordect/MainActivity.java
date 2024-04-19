@@ -4,15 +4,16 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import androidx.biometric.BiometricPrompt;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import java.io.Console;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -27,11 +28,14 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
 public class MainActivity extends AppCompatActivity {
     Button loginButton;
     private TextView titleTextView;
-    private TextView requestInfoTextView; // TextView pro zobrazení informací o požadavku
-    private TextView responseTextView; // TextView pro zobrazení odpovědi serveru
+    private TextView requestInfoTextView;
+    private TextView responseTextView;
 
     private String dataToSend = "123123123";
     private String dataToSend2;
@@ -65,32 +69,67 @@ public class MainActivity extends AppCompatActivity {
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, RegisterPhone.class);
-                startActivity(intent);
+                showBiometricPromptForRegistration();
             }
         });
 
-        // Nastavení posluchače událostí pro tlačítko loginButton
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ECDSAKeyManager signMessage = new ECDSAKeyManager();
-                dataToSend2 = signMessage.signMessage(dataToSend, uid);
-                System.out.println("Podpis 123123 je: " + dataToSend2);
-
-                makePost(dataToSend2);
+                showBiometricPromptForLogin();
             }
         });
 
 
     }
 
+    private void showBiometricPromptForLogin() {
+        Executor executor = Executors.newSingleThreadExecutor();
+        BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
+                .setTitle("Potvrzení otiskem prstu")
+                .setDescription("Proveďte potvrzení otiskem prstu pro přihlášení.")
+                .setNegativeButtonText("Zrušit")
+                .build();
 
+        BiometricPrompt biometricPrompt = new BiometricPrompt(MainActivity.this, executor,
+                new BiometricPrompt.AuthenticationCallback() {
+                    @Override
+                    public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
+                        super.onAuthenticationSucceeded(result);
+                        ECDSAKeyManager signMessage = new ECDSAKeyManager();
+                        dataToSend2 = signMessage.signMessage(dataToSend, uid);
+                        System.out.println("Podpis 123123 je: " + dataToSend2);
+                        makePost(dataToSend2);
+                    }
+                });
+
+        biometricPrompt.authenticate(promptInfo);
+    }
+
+    private void showBiometricPromptForRegistration() {
+        Executor executor = Executors.newSingleThreadExecutor();
+        BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
+                .setTitle("Potvrzení otiskem prstu")
+                .setDescription("Proveďte potvrzení otiskem prstu pro přechod na registraci.")
+                .setNegativeButtonText("Zrušit")
+                .build();
+
+        BiometricPrompt biometricPrompt = new BiometricPrompt(MainActivity.this, executor,
+                new BiometricPrompt.AuthenticationCallback() {
+                    @Override
+                    public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
+                        super.onAuthenticationSucceeded(result);
+                        Intent intent = new Intent(MainActivity.this, RegisterPhone.class);
+                        startActivity(intent);
+                    }
+                });
+
+        biometricPrompt.authenticate(promptInfo);
+    }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Registrace BroadcastReceiveru pro příjem notifikace
         IntentFilter filter = new IntentFilter("com.example.NOTIFICATION_DATA");
         LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, filter);
     }
@@ -98,12 +137,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        // Odhlášení BroadcastReceiveru
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
     }
 
     public void updateTextView(String title, String body) {
-        // Nastavení dat do TextView
         titleTextView.setText("Title: " + title + "\nBody: " + body);
     }
 
@@ -113,7 +150,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    // Ignorování ověření certifikátu
                     TrustManager[] trustAllCertificates = new TrustManager[]{
                             new X509TrustManager() {
                                 @Override
@@ -139,7 +175,6 @@ public class MainActivity extends AppCompatActivity {
                             .hostnameVerifier((hostname, session) -> true)
                             .build();
 
-                    // Vytvoření a provedení požadavku
                     RequestBody requestBody = new MultipartBody.Builder()
                             .setType(MultipartBody.FORM)
                             .addFormDataPart("uid", uid)
@@ -154,7 +189,6 @@ public class MainActivity extends AppCompatActivity {
                     Response response = client.newCall(request).execute();
                     final String result = response.body().string();
 
-                    // Aktualizace UI na hlavním vlákně
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -163,7 +197,6 @@ public class MainActivity extends AppCompatActivity {
                     });
                 } catch (Exception e) {
                     e.printStackTrace();
-                    // Zobrazení chyby na hlavním vlákně
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {

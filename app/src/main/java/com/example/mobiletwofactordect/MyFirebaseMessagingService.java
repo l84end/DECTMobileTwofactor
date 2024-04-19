@@ -15,7 +15,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        // Získání dat z příchozí zprávy
         String title = remoteMessage.getData().get("title");
         String body = remoteMessage.getData().get("body");
 

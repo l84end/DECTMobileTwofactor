@@ -52,6 +52,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-vision:20.1.3")
     implementation("org.bouncycastle:bcpkix-jdk15on:1.69")
     implementation("org.bouncycastle:bcprov-jdk15on:1.69")
+    implementation("androidx.biometric:biometric:1.1.0")
 
 
 
