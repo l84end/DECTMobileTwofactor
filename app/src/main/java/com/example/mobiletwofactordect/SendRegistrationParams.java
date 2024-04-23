@@ -1,7 +1,15 @@
 package com.example.mobiletwofactordect;
 
+import static com.example.mobiletwofactordect.SetupServer.IP_ADDRESS_KEY;
+import static com.example.mobiletwofactordect.SetupServer.PREFS_NAME;
+
 import java.util.Base64;
+
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import org.json.JSONObject;
 
@@ -26,12 +34,11 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class SendRegistrationParams {
+public class SendRegistrationParams extends AppCompatActivity {
 
     private TextView showQRInfo;
 
-
-    public static JSONObject getInfoToSend(String user, String matchingKey) throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException, UnrecoverableKeyException {
+    public static JSONObject getInfoToSend(String user, String matchingKey, String ipAddress) throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException, UnrecoverableKeyException {
         JSONObject jsonObject = new JSONObject();
         String firebaseId = GetTokenForApp.getToken();
 
@@ -53,7 +60,7 @@ public class SendRegistrationParams {
             jsonObject.put("pubKey", publicKeyBase64);
 
             // Odeslání registrace s klíči
-            sendRegistration(matchingKey, publicKeyBase64, firebaseId, user);
+            sendRegistration(matchingKey, publicKeyBase64, firebaseId, user, ipAddress);
         } catch (Exception e) {
             e.printStackTrace();
             jsonObject = new JSONObject();
@@ -64,7 +71,7 @@ public class SendRegistrationParams {
 
 
 
-    private static void sendRegistration(String matchingKey, String publicKey, String firebaseId, String login) {
+    private static void sendRegistration(String matchingKey, String publicKey, String firebaseId, String login, String ipAddress) {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -105,7 +112,7 @@ public class SendRegistrationParams {
                             .build();
 
                     Request request = new Request.Builder()
-                            .url("https://192.168.1.239:8443/index.php/apps/twofactormobile/api/1.0/set-device")
+                            .url("https://" + ipAddress + ":8443/index.php/apps/twofactormobile/api/1.0/set-device")
                             .post(requestBody)
                             .build();
 

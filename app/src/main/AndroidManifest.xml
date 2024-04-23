@@ -37,6 +37,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".RegisterPhone" />
+        <activity android:name=".SetupServer" />
         <service
             android:name=".MyFirebaseMessagingService"
             android:exported="false">

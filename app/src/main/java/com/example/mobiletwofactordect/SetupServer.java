@@ -1,28 +1,64 @@
 package com.example.mobiletwofactordect;
 
-import android.Manifest;
-import android.content.pm.PackageManager;
-import android.os.Build;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.core.app.ActivityCompat;
+import androidx.appcompat.app.AppCompatActivity;
 
-public class SetupServer {
+import java.io.Console;
+
+public class SetupServer extends AppCompatActivity {
+    public static final String PREFS_NAME = "prefFile";
+    public static final String IP_ADDRESS_KEY = "ipAddress";
+
     private String ipServerAddress;
-    private EditText ipTextSet;
-    private Button setMainPage;
-    private SetupServer setupServer;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.setup_server);
+
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        ipServerAddress = prefs.getString(IP_ADDRESS_KEY, "");
+
+        Button setIPButton = findViewById(R.id.setIP);
+        EditText setIPAddEditText = findViewById(R.id.setIPAdd);
+
+        setIPButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String ipAddress = setIPAddEditText.getText().toString();
+                try {
+                    setIpServerAddress(ipAddress);
+                    Toast.makeText(SetupServer.this, "IP Address set successfully", Toast.LENGTH_SHORT).show();
+
+                    SharedPreferences.Editor editor = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit();
+                    editor.putString(IP_ADDRESS_KEY, ipAddress);
+                    editor.apply();
+                } catch (IllegalArgumentException e) {
+                    Toast.makeText(SetupServer.this, "Invalid IP Address: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        Button setMainActivity = findViewById(R.id.setMainActivityButton);
+        setMainActivity.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+    }
 
     public String getIpServerAddress() {
         return ipServerAddress;
     }
 
     public void setIpServerAddress(String ipServerAddress) throws IllegalArgumentException {
-        // Kontrola, zda je předaná adresa IP ve správném formátu
         if (isValidIPAddress(ipServerAddress)) {
             this.ipServerAddress = ipServerAddress;
         } else {

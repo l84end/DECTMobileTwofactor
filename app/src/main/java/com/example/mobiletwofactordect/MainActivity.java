@@ -1,11 +1,15 @@
 package com.example.mobiletwofactordect;
 
-import android.app.Dialog;
+import static com.example.mobiletwofactordect.SetupServer.IP_ADDRESS_KEY;
+import static com.example.mobiletwofactordect.SetupServer.PREFS_NAME;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import androidx.biometric.BiometricPrompt;
+
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -84,13 +88,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
         setServerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                Dialog dialog = new Dialog(MainActivity.this);
-                dialog.setContentView(R.layout.set_server_param);
-                dialog.show();
+                Intent intent = new Intent(MainActivity.this, SetupServer.class);
+                startActivity(intent);
             }
         });
 
@@ -159,6 +162,9 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void makePost(String dataToSend) {
+        Context appContext = getApplicationContext();
+        SharedPreferences prefs = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String ipAddress = prefs.getString(IP_ADDRESS_KEY, "");
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -195,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
                             .build();
 
                     Request request = new Request.Builder()
-                            .url("https://192.168.1.239:8443/index.php/apps/twofactormobile/api/1.0/foo")
+                            .url("https://" + ipAddress + ":8443/index.php/apps/twofactormobile/api/1.0/foo")
                             .post(requestBody)
                             .build();
 

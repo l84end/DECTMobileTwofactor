@@ -1,6 +1,11 @@
 package com.example.mobiletwofactordect;
 
+import static com.example.mobiletwofactordect.SetupServer.IP_ADDRESS_KEY;
+import static com.example.mobiletwofactordect.SetupServer.PREFS_NAME;
+
 import android.Manifest;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
@@ -66,7 +71,7 @@ public class RegisterPhone extends AppCompatActivity {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 initQRCodeScanner();
             } else {
-                Toast.makeText(this, "Camera permission is required", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Je třeba udělit oprávnění použítí kamery", Toast.LENGTH_LONG).show();
                 finish();
             }
         }
@@ -115,6 +120,11 @@ public class RegisterPhone extends AppCompatActivity {
     }
 
     private void parseQRParameters(String QRText) {
+
+        Context appContext = getApplicationContext();
+        SharedPreferences prefs = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String ipAddress = prefs.getString(IP_ADDRESS_KEY, "");
+
         try {
             JSONObject jsonObject = new JSONObject(QRText);
 
@@ -123,7 +133,7 @@ public class RegisterPhone extends AppCompatActivity {
 
             ECDSAKeyManager keyManager = new ECDSAKeyManager();
             keyManager.generateKeyPair(user);
-            JSONObject dataToSend = SendRegistrationParams.getInfoToSend(user, secretCode);
+            JSONObject dataToSend = SendRegistrationParams.getInfoToSend(user, secretCode, ipAddress);
 
         } catch (JSONException e) {
             e.printStackTrace();
