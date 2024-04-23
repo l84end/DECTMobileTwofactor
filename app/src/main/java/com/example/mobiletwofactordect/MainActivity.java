@@ -1,5 +1,6 @@
 package com.example.mobiletwofactordect;
 
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -36,9 +37,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView titleTextView;
     private TextView requestInfoTextView;
     private TextView responseTextView;
-
-    private String dataToSend = "123123123";
-    private String dataToSend2;
+    private String dataToSend = "";
+    private String signedDataToSend;
 
     private String uid;
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
@@ -46,25 +46,36 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             String title = intent.getStringExtra("title");
             String body = intent.getStringExtra("body");
+            String challenge = intent.getStringExtra("challenge");
+            dataToSend = challenge;
             uid = body;
-            updateTextView(title, body);
+            updateTextView(title, body, challenge);
         }
     };
 
     private final OkHttpClient client = new OkHttpClient();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Přiřazení odkazů na TextView a Button
         titleTextView = findViewById(R.id.titleTextView);
         requestInfoTextView = findViewById(R.id.bodyTextView);
         loginButton = findViewById(R.id.loginButton);
         Button registerButton = findViewById(R.id.registerButton);
+        Button setServerButton = findViewById(R.id.setServer);
 
         GetTokenForApp.setupFCMTokenListener(this);
+
+        loginButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showBiometricPromptForLogin();
+            }
+        });
+        handleIntent(getIntent());
 
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -73,13 +84,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        loginButton.setOnClickListener(new View.OnClickListener() {
+        setServerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showBiometricPromptForLogin();
+
+                Dialog dialog = new Dialog(MainActivity.this);
+                dialog.setContentView(R.layout.set_server_param);
+                dialog.show();
             }
         });
-
 
     }
 
@@ -97,9 +110,9 @@ public class MainActivity extends AppCompatActivity {
                     public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
                         super.onAuthenticationSucceeded(result);
                         ECDSAKeyManager signMessage = new ECDSAKeyManager();
-                        dataToSend2 = signMessage.signMessage(dataToSend, uid);
-                        System.out.println("Podpis 123123 je: " + dataToSend2);
-                        makePost(dataToSend2);
+                        signedDataToSend = signMessage.signMessage(dataToSend, uid);
+                        System.out.println("Podpis 123123 je: " + signedDataToSend);
+                        makePost(signedDataToSend);
                     }
                 });
 
@@ -140,8 +153,8 @@ public class MainActivity extends AppCompatActivity {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
     }
 
-    public void updateTextView(String title, String body) {
-        titleTextView.setText("Title: " + title + "\nBody: " + body);
+    public void updateTextView(String title, String body, String challenge) {
+        titleTextView.setText("Title: " + title + "\nBody: " + body + "\nChallenge: " + challenge);
     }
 
 
@@ -208,5 +221,24 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleIntent(intent);
+    }
 
+    private void handleIntent(Intent intent) {
+        if (intent != null) {
+            String title = intent.getStringExtra("title");
+            String body = intent.getStringExtra("body");
+            String challenge = intent.getStringExtra("challenge");
+            if (title != null && body != null) {
+                dataToSend = challenge;
+                uid = body;
+                titleTextView.setText(title);
+                requestInfoTextView.setText(body);
+            }
+        }
+    }
 }
