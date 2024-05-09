@@ -37,13 +37,14 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
-    Button loginButton;
+    private Button loginButton;
+    private Button registerButton;
+    private Button denyRegister;
+    private Button setServerButton;
     private TextView titleTextView;
     private TextView requestInfoTextView;
-    private TextView responseTextView;
     private String dataToSend = "";
     private String signedDataToSend;
-
     private String uid;
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -54,11 +55,16 @@ public class MainActivity extends AppCompatActivity {
             dataToSend = challenge;
             uid = body;
             updateTextView(title, body, challenge);
+            // Zobrazit tlačítko pouze pokud je příchozí data validní
+            if (dataIsValid(title, body, challenge)) {
+                loginButton.setVisibility(View.VISIBLE);
+                denyRegister.setVisibility(View.VISIBLE);
+            }
         }
     };
 
-    private final OkHttpClient client = new OkHttpClient();
 
+    private final OkHttpClient client = new OkHttpClient();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,27 +73,44 @@ public class MainActivity extends AppCompatActivity {
 
         titleTextView = findViewById(R.id.titleTextView);
         requestInfoTextView = findViewById(R.id.bodyTextView);
+        denyRegister = findViewById(R.id.denyRegister);
+        denyRegister.setVisibility(View.GONE);  // Skrytí tlačítka na začátku
         loginButton = findViewById(R.id.loginButton);
-        Button registerButton = findViewById(R.id.registerButton);
-        Button setServerButton = findViewById(R.id.setServer);
+        loginButton.setVisibility(View.GONE);  // Skrytí tlačítka na začátku
+        registerButton = findViewById(R.id.registerButton);
+        setServerButton = findViewById(R.id.setServer);
 
         GetTokenForApp.setupFCMTokenListener(this);
 
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showBiometricPromptForLogin();
+                login();
+                denyRegister.setVisibility(View.GONE);
+                loginButton.setVisibility(View.GONE);
             }
         });
+
+        GetTokenForApp.setupFCMTokenListener(this);
         handleIntent(getIntent());
+
+        denyRegister.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                denyRegister.setVisibility(View.GONE);
+                loginButton.setVisibility(View.GONE);
+                cancelAuthentication();
+            }
+        });
+
 
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showBiometricPromptForRegistration();
+                Intent intent = new Intent(MainActivity.this, RegisterPhone.class);
+                startActivity(intent);
             }
         });
-
 
         setServerButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -97,67 +120,55 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        handleIntent(getIntent());
+        showBiometricPromptForLogin();
+    }
+
+    private void cancelAuthentication() {
+        titleTextView.setText("Přihlášení zrušeno");
     }
 
     private void showBiometricPromptForLogin() {
         Executor executor = Executors.newSingleThreadExecutor();
         BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
                 .setTitle("Potvrzení otiskem prstu")
-                .setDescription("Proveďte potvrzení otiskem prstu pro přihlášení.")
+                .setDescription("Proveďte potvrzení otiskem prstu pro přístup do aplikace.")
                 .setNegativeButtonText("Zrušit")
                 .build();
 
-        BiometricPrompt biometricPrompt = new BiometricPrompt(MainActivity.this, executor,
-                new BiometricPrompt.AuthenticationCallback() {
-                    @Override
-                    public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
-                        super.onAuthenticationSucceeded(result);
-                        ECDSAKeyManager signMessage = new ECDSAKeyManager();
-                        signedDataToSend = signMessage.signMessage(dataToSend, uid);
-                        System.out.println("Podpis 123123 je: " + signedDataToSend);
-                        makePost(signedDataToSend);
-                    }
-                });
+        BiometricPrompt biometricPrompt = new BiometricPrompt(MainActivity.this, executor, new BiometricPrompt.AuthenticationCallback() {
+            @Override
+            public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
+                super.onAuthenticationSucceeded(result);
+                continueApp();  // Continue with the application normally
+            }
+
+            @Override
+            public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
+                super.onAuthenticationError(errorCode, errString);
+                finish();  // Exit the application if authentication fails or is canceled
+            }
+
+            @Override
+            public void onAuthenticationFailed() {
+                super.onAuthenticationFailed();
+                finish();  // Exit the application on authentication failure
+            }
+        });
 
         biometricPrompt.authenticate(promptInfo);
     }
 
-    private void showBiometricPromptForRegistration() {
-        Executor executor = Executors.newSingleThreadExecutor();
-        BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
-                .setTitle("Potvrzení otiskem prstu")
-                .setDescription("Proveďte potvrzení otiskem prstu pro přechod na registraci.")
-                .setNegativeButtonText("Zrušit")
-                .build();
-
-        BiometricPrompt biometricPrompt = new BiometricPrompt(MainActivity.this, executor,
-                new BiometricPrompt.AuthenticationCallback() {
-                    @Override
-                    public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
-                        super.onAuthenticationSucceeded(result);
-                        Intent intent = new Intent(MainActivity.this, RegisterPhone.class);
-                        startActivity(intent);
-                    }
-                });
-
-        biometricPrompt.authenticate(promptInfo);
+    private boolean dataIsValid(String title, String body, String challenge) {
+        // Implementujte vaše vlastní ověření dat
+        return title != null && body != null && challenge != null;
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        IntentFilter filter = new IntentFilter("com.example.NOTIFICATION_DATA");
-        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, filter);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
-    }
-
-    public void updateTextView(String title, String body, String challenge) {
-        titleTextView.setText("Title: " + title + "\nBody: " + body + "\nChallenge: " + challenge);
+    private void login() {
+        ECDSAKeyManager signMessage = new ECDSAKeyManager();
+        signedDataToSend = signMessage.signMessage(dataToSend, uid);
+        System.out.println("Podpis je: " + signedDataToSend);
+        makePost(signedDataToSend);
     }
 
 
@@ -211,7 +222,7 @@ public class MainActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            titleTextView.setText("Server Response: " + result);
+                            titleTextView.setText("Požadavek byl úspěšně odeslán na server");
                         }
                     });
                 } catch (Exception e) {
@@ -225,6 +236,27 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }).start();
+    }
+
+
+    private void continueApp() {
+    }
+
+    public void updateTextView(String title, String body, String challenge) {
+        titleTextView.setText(title + "\nPřihlášení uživatele: " + body);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        IntentFilter filter = new IntentFilter("com.example.NOTIFICATION_DATA");
+        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, filter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
     }
 
     @Override
@@ -244,6 +276,8 @@ public class MainActivity extends AppCompatActivity {
                 uid = body;
                 titleTextView.setText(title);
                 requestInfoTextView.setText(body);
+                loginButton.setVisibility(View.VISIBLE);
+                denyRegister.setVisibility(View.VISIBLE);
             }
         }
     }

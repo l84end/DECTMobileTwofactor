@@ -34,13 +34,13 @@ public class SetupServer extends AppCompatActivity {
                 String ipAddress = setIPAddEditText.getText().toString();
                 try {
                     setIpServerAddress(ipAddress);
-                    Toast.makeText(SetupServer.this, "IP Address set successfully", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SetupServer.this, "IP adresa nastavena: ", Toast.LENGTH_SHORT).show();
 
                     SharedPreferences.Editor editor = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit();
                     editor.putString(IP_ADDRESS_KEY, ipAddress);
                     editor.apply();
                 } catch (IllegalArgumentException e) {
-                    Toast.makeText(SetupServer.this, "Invalid IP Address: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SetupServer.this, "Neplatná adresa IP: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             }
         });

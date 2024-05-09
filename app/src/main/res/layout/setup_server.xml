@@ -8,15 +8,21 @@
 
     <Button
         android:id="@+id/setMainActivityButton"
-        android:layout_width="140dp"
+        android:layout_width="170dp"
         android:layout_height="50dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="84dp"
+        android:background="@drawable/custom_button_background"
+        android:padding="12dp"
         android:text="zpět"
+        android:textColor="#FFFFFF"
+        app:backgroundTint="#11A80B"
+        app:cornerRadius="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.781" />
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <EditText
         android:id="@+id/setIPAdd"
@@ -33,28 +39,35 @@
 
     <TextView
         android:id="@+id/textView2"
-        android:layout_width="230dp"
-        android:layout_height="33dp"
-        android:text="Prosím zadejte IP adresu"
+        android:layout_width="247dp"
+        android:layout_height="50dp"
+        android:text="Prosím zadejte IP adresu Nextcloud serveru"
         android:textAlignment="center"
         android:textColor="#070707"
+        android:textSize="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.499" />
 
     <Button
         android:id="@+id/setIP"
-        android:layout_width="140dp"
+        android:layout_width="170dp"
         android:layout_height="50dp"
-        android:text="nastavit"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="148dp"
+        android:background="@drawable/custom_button_background"
+        android:padding="12dp"
+        android:text="nastavit IP adresu"
+        android:textColor="#FFFFFF"
+        app:backgroundTint="#11A80B"
+        app:cornerRadius="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.697" />
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <ImageView
         android:id="@+id/imageView3"
