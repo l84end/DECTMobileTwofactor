@@ -38,7 +38,6 @@ DECTMobileTwofactor je implementace aplikace pro dvoufaktorové ověřování (2
 5. Vytvořte žádost o stažení.
 
 
-
 # DECTMobileTwofactor
 
 DECTMobileTwofactor is an app implementation for DECT-based two-factor authentication (2FA). This project provides a secure method for logging in using DECT (Digital Enhanced Cordless Telecommunications) technology.
