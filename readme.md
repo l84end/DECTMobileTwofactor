@@ -4,7 +4,7 @@ DECTMobileTwofactor je implementace aplikace pro dvoufaktorové ověřování (2
 
 ## Funkce
 
-- Bezpečné dvoufaktorové ověřování pomocí DECT
+- Bezpečné dvoufaktorové ověřování pro Nextcloud
 - Snadná integrace se stávajícími systémy
 - Uživatelsky přívětivé rozhraní
 
@@ -12,7 +12,6 @@ DECTMobileTwofactor je implementace aplikace pro dvoufaktorové ověřování (2
 
 - Android Studio
 - Java Development Kit (JDK) 8 nebo vyšší verze
-- Hardware kompatibilní s DECT
 
 ## Instalace
 
@@ -27,11 +26,11 @@ DECTMobileTwofactor je implementace aplikace pro dvoufaktorové ověřování (2
 
 1. Spusťte aplikaci v zařízení se systémem Android.
 2. Podle pokynů na obrazovce nakonfigurujte DECT 2FA.
-3. Pomocí aplikace se bezpečně přihlaste ke svým účtům.
+3. Pomocí aplikace si bezpečně registrujte dvoufaktorové přihlášení.
 
 ## Přispívání
 
-1. Rozdvojte úložiště.
+1. Fork úložiště.
 2. Vytvořte novou větev (`git checkout -b feature-branch`).
 3. Odevzdejte změny (`git commit -m 'Add new feature'`).
 4. Push do větve (`git push origin feature-branch`).
@@ -40,11 +39,11 @@ DECTMobileTwofactor je implementace aplikace pro dvoufaktorové ověřování (2
 
 # DECTMobileTwofactor
 
-DECTMobileTwofactor is an app implementation for DECT-based two-factor authentication (2FA). This project provides a secure method for logging in using DECT (Digital Enhanced Cordless Telecommunications) technology.
+DECTMobileTwofactor is a DECT-based implementation of a two-factor authentication (2FA) application. This project provides a secure method of logging in using DECT (Digital Enhanced Cordless Telecommunications) technology.
 
 ## Features
 
-- Secure two-factor authentication using DECT
+- Secure two-factor authentication for Nextcloud
 - Easy integration with existing systems
 - User-friendly interface
 
@@ -52,7 +51,6 @@ DECTMobileTwofactor is an app implementation for DECT-based two-factor authentic
 
 - Android Studio
 - Java Development Kit (JDK) 8 or higher
-- DECT-compatible hardware
 
 ## Installation
 
@@ -63,19 +61,21 @@ DECTMobileTwofactor is an app implementation for DECT-based two-factor authentic
 2. Open the project in Android Studio.
 3. Build and run the project on your device.
 
-## Usage
+## Using
 
-1. Launch the app on your Android device.
-2. Follow the on-screen instructions to configure DECT 2FA.
-3. Use the app to securely log in to your accounts.
+1. Launch the application on your Android device.
+2. Follow the on-screen instructions to configure the DECT 2FA.
+3. Use the app to securely register your two-factor login.
 
 ## Contributing
 
-1. Fork the repository.
+1. Fork storage.
 2. Create a new branch (`git checkout -b feature-branch`).
 3. Commit your changes (`git commit -m 'Add new feature'`).
 4. Push to the branch (`git push origin feature-branch`).
-5. Create a Pull Request.
+5. Create a pull request.
+
+
 
 
 
