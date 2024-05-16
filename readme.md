@@ -25,7 +25,7 @@ DECTMobileTwofactor je implementace aplikace pro dvoufaktorové ověřování (2
 ## Použití
 
 1. Spusťte aplikaci v zařízení se systémem Android.
-2. Podle pokynů na obrazovce nakonfigurujte DECT 2FA.
+2. Podle pokynů na obrazovce nakonfigurujte 2FA.
 3. Pomocí aplikace si bezpečně registrujte dvoufaktorové přihlášení.
 
 ## Přispívání
@@ -64,7 +64,7 @@ DECTMobileTwofactor is a DECT-based implementation of a two-factor authenticatio
 ## Using
 
 1. Launch the application on your Android device.
-2. Follow the on-screen instructions to configure the DECT 2FA.
+2. Follow the on-screen instructions to configure the 2FA.
 3. Use the app to securely register your two-factor login.
 
 ## Contributing
