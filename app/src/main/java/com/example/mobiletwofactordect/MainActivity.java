@@ -212,7 +212,7 @@ public class MainActivity extends AppCompatActivity {
                             .build();
 
                     Request request = new Request.Builder()
-                            .url("https://" + ipAddress + ":8443/index.php/apps/twofactormobile/api/1.0/foo")
+                            .url("https://" + ipAddress + ":8443/index.php/apps/twofactormobile/api/1.0/login")
                             .post(requestBody)
                             .build();
 
